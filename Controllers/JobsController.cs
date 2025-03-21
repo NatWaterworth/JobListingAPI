@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using JobListingAPI.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using JobListingAPI.Models;
+using JobListingAPI.Services;
 
 namespace JobListingAPI.Controllers
 {
@@ -14,36 +8,33 @@ namespace JobListingAPI.Controllers
     [ApiController]
     public class JobsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IJobService _jobService;
 
-        public JobsController(AppDbContext context)
+        public JobsController(IJobService jobService)
         {
-            _context = context;
+            _jobService = jobService;
         }
 
         // GET: api/Jobs
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Job>>> GetJobs()
         {
-            return await _context.Jobs.ToListAsync();
+            return await _jobService.GetAllAsync();
         }
 
         // GET: api/Jobs/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Job>> GetJob(int id)
         {
-            var job = await _context.Jobs.FindAsync(id);
-
+            var job = await _jobService.GetByIdAsync(id);
             if (job == null)
             {
                 return NotFound();
             }
-
             return job;
         }
 
         // PUT: api/Jobs/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutJob(int id, Job job)
         {
@@ -52,57 +43,34 @@ namespace JobListingAPI.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(job).State = EntityState.Modified;
-
-            try
+            var success = await _jobService.UpdateAsync(id, job);
+            if (!success)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!JobExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
             return NoContent();
         }
 
         // POST: api/Jobs
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Job>> PostJob(Job job)
         {
-            _context.Jobs.Add(job);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetJob", new { id = job.Id }, job);
+            var createdJob = await _jobService.CreateAsync(job);
+            return CreatedAtAction(nameof(GetJob), new { id = createdJob.Id }, createdJob);
         }
 
         // DELETE: api/Jobs/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteJob(int id)
         {
-            var job = await _context.Jobs.FindAsync(id);
-            if (job == null)
+            var success = await _jobService.DeleteAsync(id);
+            if (!success)
             {
                 return NotFound();
             }
 
-            _context.Jobs.Remove(job);
-            await _context.SaveChangesAsync();
-
             return NoContent();
-        }
-
-        private bool JobExists(int id)
-        {
-            return _context.Jobs.Any(e => e.Id == id);
         }
     }
 }
