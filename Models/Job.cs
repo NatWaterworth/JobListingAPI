@@ -7,5 +7,12 @@ namespace JobListingAPI.Models
         public string Description { get; set; } = string.Empty;
         public string Company { get; set; } = string.Empty;
         public decimal Salary { get; set; }
+        public DateTime DatePosted { get; set; }
+
+        public Job()
+        {
+            DatePosted = DateTime.UtcNow;
+        }
     }
+
 }

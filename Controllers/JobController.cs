@@ -6,21 +6,29 @@ namespace JobListingAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class JobsController : ControllerBase
+    public class JobController : ControllerBase
     {
         private readonly IJobService _jobService;
 
-        public JobsController(IJobService jobService)
+        public JobController(IJobService jobService)
         {
             _jobService = jobService;
         }
 
         // GET: api/Jobs
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Job>>> GetJobs()
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Job>>> GetJobs(
+            string? search = null,
+            int page = 1,
+            int pageSize = 10,
+            string? sortBy = null,
+            bool desc = false)
         {
-            return await _jobService.GetAllAsync();
+            var jobs = await _jobService.GetAllAsync(search, page, pageSize, sortBy, desc);
+            return Ok(jobs);
         }
+
 
         // GET: api/Jobs/5
         [HttpGet("{id}")]
