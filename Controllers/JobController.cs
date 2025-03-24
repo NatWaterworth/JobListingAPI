@@ -18,7 +18,6 @@ namespace JobListingAPI.Controllers
 
         // GET: api/Jobs
         [HttpGet]
-        [HttpGet]
         public async Task<ActionResult<IEnumerable<Job>>> GetJobs(
             string? search = null,
             int page = 1,
@@ -45,21 +44,25 @@ namespace JobListingAPI.Controllers
 
         // PUT: api/Jobs/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutJob(int id, Job job)
+        public async Task<IActionResult> PutJob(int id, UpdateJobDto dto)
         {
-            if (id != job.Id)
-            {
-                return BadRequest();
-            }
-
-            var success = await _jobService.UpdateAsync(id, job);
-            if (!success)
-            {
+            var existingJob = await _jobService.GetByIdAsync(id);
+            if (existingJob == null)
                 return NotFound();
-            }
+
+            // Map DTO to existing job
+            existingJob.Title = dto.Title;
+            existingJob.Description = dto.Description;
+            existingJob.Company = dto.Company;
+            existingJob.Salary = dto.Salary;
+
+            var success = await _jobService.UpdateAsync(id, existingJob);
+            if (!success)
+                return NotFound();
 
             return NoContent();
         }
+
 
         [HttpPost]
         public async Task<ActionResult<Job>> PostJob(CreateJobDto dto)
