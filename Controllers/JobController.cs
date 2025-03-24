@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using JobListingAPI.Models;
 using JobListingAPI.Services;
+using JobListingAPI.DTOs;
 
 namespace JobListingAPI.Controllers
 {
@@ -60,13 +61,22 @@ namespace JobListingAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Jobs
         [HttpPost]
-        public async Task<ActionResult<Job>> PostJob(Job job)
+        public async Task<ActionResult<Job>> PostJob(CreateJobDto dto)
         {
+            var job = new Job
+            {
+                Title = dto.Title,
+                Description = dto.Description,
+                Company = dto.Company,
+                Salary = dto.Salary,
+                DatePosted = DateTime.UtcNow
+            };
+
             var createdJob = await _jobService.CreateAsync(job);
             return CreatedAtAction(nameof(GetJob), new { id = createdJob.Id }, createdJob);
         }
+
 
         // DELETE: api/Jobs/5
         [HttpDelete("{id}")]

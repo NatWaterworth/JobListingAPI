@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using JobListingAPI.Data;
 using System;
 using JobListingAPI.Services;
+using FluentValidation.AspNetCore;
+using FluentValidation;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IJobService, JobService>();
+
+builder.Services.AddControllers();
+
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddFluentValidationAutoValidation();
+
+
 
 
 builder.Services.AddControllers();
